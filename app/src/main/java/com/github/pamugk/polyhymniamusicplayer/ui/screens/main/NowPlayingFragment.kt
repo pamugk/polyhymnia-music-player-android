@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -21,15 +22,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.github.pamugk.polyhymniamusicplayer.ui.viewmodel.MainViewModel
 
 @Composable
-internal fun NowPlayingFragment(padding: PaddingValues = PaddingValues()) {
+internal fun NowPlayingFragment(
+    padding: PaddingValues = PaddingValues(),
+    viewModel: MainViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
     Column(
         modifier = Modifier
             .padding(padding)
@@ -54,6 +64,7 @@ internal fun NowPlayingFragment(padding: PaddingValues = PaddingValues()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
             IconButton(
                 onClick = { /*TODO*/ },
+                enabled = uiState.hasPreviousTrack,
             ) {
                 Icon(
                     Icons.Default.SkipPrevious,
@@ -65,27 +76,35 @@ internal fun NowPlayingFragment(padding: PaddingValues = PaddingValues()) {
             ) {
                 Icon(
                     Icons.Default.FastRewind,
-                    contentDescription = "Previous",
+                    contentDescription = "Fast rewind",
                 )
             }
             IconButton(
                 onClick = { /*TODO*/ },
             ) {
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = "Play",
-                )
+                if (uiState.playing) {
+                    Icon(
+                        Icons.Default.Pause,
+                        contentDescription = "Pause",
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = "Play",
+                    )
+                }
             }
             IconButton(
                 onClick = { /*TODO*/ },
             ) {
                 Icon(
                     Icons.Default.FastForward,
-                    contentDescription = "Next",
+                    contentDescription = "Fast-forward",
                 )
             }
             IconButton(
                 onClick = { /*TODO*/ },
+                enabled = uiState.hasNextTrack,
             ) {
                 Icon(
                     Icons.Default.SkipNext,
