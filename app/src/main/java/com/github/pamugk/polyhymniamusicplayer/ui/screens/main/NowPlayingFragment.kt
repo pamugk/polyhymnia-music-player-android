@@ -58,12 +58,13 @@ internal fun NowPlayingFragment(
         Text(text = "Unknown artist")
         Slider(
             modifier = Modifier.semantics { contentDescription = "Playback slider" },
-            onValueChange = {},
-            value = 0.0f,
+            onValueChange = { viewModel.seekPosition(it) },
+            value = uiState.currentPosition,
+            valueRange = 0f..uiState.duration
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = { viewModel.goToPreviousTrack() },
                 enabled = uiState.hasPreviousTrack,
             ) {
                 Icon(
@@ -72,7 +73,8 @@ internal fun NowPlayingFragment(
                 )
             }
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = { viewModel.fastRewind() },
+                enabled = uiState.fastRewindEnabled
             ) {
                 Icon(
                     Icons.Default.FastRewind,
@@ -80,7 +82,7 @@ internal fun NowPlayingFragment(
                 )
             }
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = { viewModel.switchPlaying() },
             ) {
                 if (uiState.playing) {
                     Icon(
@@ -95,7 +97,8 @@ internal fun NowPlayingFragment(
                 }
             }
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = { viewModel.fastForward() },
+                enabled = uiState.fastForwardEnabled,
             ) {
                 Icon(
                     Icons.Default.FastForward,
@@ -103,7 +106,7 @@ internal fun NowPlayingFragment(
                 )
             }
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = { viewModel.goToNextTrack() },
                 enabled = uiState.hasNextTrack,
             ) {
                 Icon(
