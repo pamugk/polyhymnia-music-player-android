@@ -1,10 +1,12 @@
 package com.github.pamugk.polyhymniamusicplayer.ui.screens.main
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sort
@@ -19,12 +21,17 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.github.pamugk.polyhymniamusicplayer.data.worker.LibraryScanWorker
 
 private enum class Fragment {
     NOW_PLAYING,
@@ -41,6 +48,8 @@ private data class Destination(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
+    val context = LocalContext.current
+
     var searchBarActive by remember { mutableStateOf(false) }
     var searchBarQuery by remember { mutableStateOf("") }
 
@@ -49,7 +58,7 @@ fun MainScreen() {
         Destination(Fragment.NOW_PLAYING, "Now Playing", Icons.Default.PlayCircle),
         Destination(Fragment.ALBUMS, "Albums", Icons.Default.Album),
         Destination(Fragment.ARTISTS, "Artists", Icons.Default.Person),
-        Destination(Fragment.GENRES, "Genres", Icons.Default.Label),
+        Destination(Fragment.GENRES, "Genres", Icons.AutoMirrored.Filled.Label),
     )
 
     Scaffold(
@@ -71,15 +80,20 @@ fun MainScreen() {
                     if (currentFragment != Fragment.NOW_PLAYING) {
                         IconButton(onClick = { /*TODO*/ }) {
                             Icon(
-                                Icons.Default.Sort,
+                                Icons.AutoMirrored.Filled.Sort,
                                 contentDescription = "Settings",
                             )
                         }
                     }
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(
+                        onClick = {
+                            val request = OneTimeWorkRequestBuilder<LibraryScanWorker>().build()
+                            WorkManager.getInstance(context).enqueue(request)
+                        }
+                    ) {
                         Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Settings",
+                            Icons.Default.Refresh,
+                            contentDescription = "Refresh",
                         )
                     }
                 }
