@@ -1,6 +1,6 @@
 package com.github.pamugk.polyhymniamusicplayer.data.entity
 
-data class Track(
+data class Album(
     val id: Long,
     val title: String?
 )

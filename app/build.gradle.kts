@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.android")
 }
 
@@ -64,18 +63,6 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:$mediaVersion")
     implementation("androidx.media3:media3-session:$mediaVersion")
     implementation("androidx.media3:media3-ui:$mediaVersion")
-
-    // Room
-    val roomVersion = "2.6.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    annotationProcessor("androidx.room:room-compiler:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    implementation("androidx.room:room-paging:$roomVersion")
-
-    // Worker
-    val workVersion = "2.9.0"
-    implementation("androidx.work:work-runtime-ktx:$workVersion")
 
     // Jetpack Compose
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))

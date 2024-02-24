@@ -6,10 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,17 +18,12 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import com.github.pamugk.polyhymniamusicplayer.data.worker.LibraryScanWorker
 
 private enum class Fragment {
     NOW_PLAYING,
@@ -48,8 +40,6 @@ private data class Destination(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    val context = LocalContext.current
-
     var searchBarActive by remember { mutableStateOf(false) }
     var searchBarQuery by remember { mutableStateOf("") }
 
@@ -84,17 +74,6 @@ fun MainScreen() {
                                 contentDescription = "Settings",
                             )
                         }
-                    }
-                    IconButton(
-                        onClick = {
-                            val request = OneTimeWorkRequestBuilder<LibraryScanWorker>().build()
-                            WorkManager.getInstance(context).enqueue(request)
-                        }
-                    ) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "Refresh",
-                        )
                     }
                 }
             )
