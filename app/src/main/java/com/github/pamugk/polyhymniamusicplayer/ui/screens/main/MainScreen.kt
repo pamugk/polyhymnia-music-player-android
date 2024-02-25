@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Search
@@ -27,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 
 private enum class Fragment {
     NOW_PLAYING,
+    TRACKS,
     ALBUMS,
     ARTISTS,
     GENRES
@@ -46,6 +48,7 @@ fun MainScreen() {
     var currentFragment by remember { mutableStateOf(Fragment.NOW_PLAYING) }
     val destinations = listOf(
         Destination(Fragment.NOW_PLAYING, "Now Playing", Icons.Default.PlayCircle),
+        Destination(Fragment.TRACKS, "Tracks", Icons.Default.Audiotrack),
         Destination(Fragment.ALBUMS, "Albums", Icons.Default.Album),
         Destination(Fragment.ARTISTS, "Artists", Icons.Default.Person),
         Destination(Fragment.GENRES, "Genres", Icons.AutoMirrored.Filled.Label),
@@ -91,6 +94,7 @@ fun MainScreen() {
     ) { innerPadding ->
         when(currentFragment) {
             Fragment.NOW_PLAYING -> NowPlayingFragment(padding = innerPadding)
+            Fragment.TRACKS -> TracksFragment(padding = innerPadding)
             Fragment.ALBUMS -> AlbumsFragment(padding = innerPadding)
             Fragment.ARTISTS -> ArtistsFragment(padding = innerPadding)
             Fragment.GENRES -> GenresFragment(padding = innerPadding)

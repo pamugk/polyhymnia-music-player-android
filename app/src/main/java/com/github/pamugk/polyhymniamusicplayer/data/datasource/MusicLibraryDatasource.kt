@@ -126,6 +126,8 @@ fun ContentResolver.getTracks(): List<Track> {
             tracks.add(
                 Track(
                     id = cursor.getLong(idIndex),
+                    album = cursor.getStringOrNull(albumIndex),
+                    artist = cursor.getStringOrNull(artistIndex),
                     title = cursor.getStringOrNull(titleIndex)
                 )
             )
