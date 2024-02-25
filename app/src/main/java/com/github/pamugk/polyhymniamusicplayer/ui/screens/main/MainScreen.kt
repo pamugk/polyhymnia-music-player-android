@@ -90,10 +90,10 @@ fun MainScreen() {
         }
     ) { innerPadding ->
         when(currentFragment) {
-            Fragment.NOW_PLAYING -> NowPlayingFragment(innerPadding)
-            Fragment.ALBUMS -> AlbumsFragment(innerPadding)
-            Fragment.ARTISTS -> ArtistsFragment(innerPadding)
-            Fragment.GENRES -> GenresFragment(innerPadding)
+            Fragment.NOW_PLAYING -> NowPlayingFragment(padding = innerPadding)
+            Fragment.ALBUMS -> AlbumsFragment(padding = innerPadding)
+            Fragment.ARTISTS -> ArtistsFragment(padding = innerPadding)
+            Fragment.GENRES -> GenresFragment(padding = innerPadding)
         }
     }
 }
