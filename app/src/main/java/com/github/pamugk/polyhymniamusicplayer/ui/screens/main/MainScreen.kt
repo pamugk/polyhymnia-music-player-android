@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.media3.session.MediaController
 
 private enum class Fragment {
     NOW_PLAYING,
@@ -41,7 +42,7 @@ private data class Destination(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(controller: MediaController?) {
     var searchBarActive by remember { mutableStateOf(false) }
     var searchBarQuery by remember { mutableStateOf("") }
 
@@ -93,7 +94,10 @@ fun MainScreen() {
         }
     ) { innerPadding ->
         when(currentFragment) {
-            Fragment.NOW_PLAYING -> NowPlayingFragment(padding = innerPadding)
+            Fragment.NOW_PLAYING -> NowPlayingFragment(
+                controller = controller,
+                padding = innerPadding
+            )
             Fragment.TRACKS -> TracksFragment(padding = innerPadding)
             Fragment.ALBUMS -> AlbumsFragment(padding = innerPadding)
             Fragment.ARTISTS -> ArtistsFragment(padding = innerPadding)
@@ -106,6 +110,6 @@ fun MainScreen() {
 @Preview
 private fun MainScreePreview() {
     MaterialTheme {
-        MainScreen()
+        MainScreen(null)
     }
 }

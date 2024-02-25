@@ -6,20 +6,21 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.pamugk.polyhymniamusicplayer.ui.screens.main.MainScreen
+import com.github.pamugk.polyhymniamusicplayer.data.controller.rememberMediaController
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.forbidden.ForbiddenScreen
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.main.MainScreen
 
 class MainActivity : ComponentActivity() {
-    private lateinit var allowedFlow: MutableStateFlow<Boolean>
-    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
     private val storagePermission: String
         get() =
@@ -29,29 +30,27 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        allowedFlow = MutableStateFlow(ContextCompat.checkSelfPermission(this, storagePermission) ==
-                PackageManager.PERMISSION_GRANTED)
-        this.requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            allowedFlow.value = it
-        }
-
         setContent {
+            var enoughPermissions by remember {
+                mutableStateOf(ContextCompat.checkSelfPermission(
+                    this,
+                    storagePermission) == PackageManager.PERMISSION_GRANTED)
+            }
+            val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+                enoughPermissions = it
+            }
+            LaunchedEffect(Unit) {
+                permissionLauncher.launch(storagePermission)
+            }
+
             MaterialTheme {
-                val enoughPermissions by allowedFlow.collectAsStateWithLifecycle()
                 if (enoughPermissions) {
-                    MainScreen()
+                    val controller by rememberMediaController()
+                    MainScreen(controller)
                 } else {
                     ForbiddenScreen()
                 }
             }
         }
     }
-
-    override fun onStart() {
-        super.onStart()
-        if (!allowedFlow.value) {
-            requestPermissionLauncher.launch(storagePermission)
-        }
-    }
-
 }

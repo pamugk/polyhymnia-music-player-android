@@ -6,7 +6,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 
 class PlaybackService : MediaSessionService() {
-    private var mediaSession: MediaSession? = null
+    private lateinit var mediaSession: MediaSession
 
     override fun onCreate() {
         super.onCreate()
@@ -15,20 +15,16 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
-        mediaSession?.run {
-            player.release()
-            release()
-            mediaSession = null
-        }
+        mediaSession.release()
+        mediaSession.player.release()
         super.onDestroy()
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession =
         mediaSession
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        val player = mediaSession?.player!!
-        if (!player.playWhenReady || player.mediaItemCount == 0) {
+        if (!mediaSession.player.playWhenReady || mediaSession.player.mediaItemCount == 0) {
             stopSelf()
         }
     }
