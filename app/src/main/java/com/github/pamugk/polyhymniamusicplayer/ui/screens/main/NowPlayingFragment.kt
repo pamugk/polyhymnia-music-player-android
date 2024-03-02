@@ -70,9 +70,9 @@ internal fun NowPlayingFragment(
                 alignment = Alignment.Center,
                 contentScale = ContentScale.Fit,
             )
-            Text(text = "No track is playing")
-            Text(text = "Unknown album")
-            Text(text = "Unknown artist")
+            Text(text = playerState.mediaMetadata.title?.toString() ?: "No track is playing")
+            Text(text = playerState.mediaMetadata.albumTitle?.toString() ?: "Unknown album")
+            Text(text = playerState.mediaMetadata.artist ?.toString() ?: "Unknown artist")
             Slider(
                 modifier = Modifier.semantics { contentDescription = "Playback slider" },
                 onValueChange = { controller.seekTo(it.toLong()) },
