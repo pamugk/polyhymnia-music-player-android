@@ -1,6 +1,5 @@
 package com.github.pamugk.polyhymniamusicplayer.ui.screens.forbidden
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -10,19 +10,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.media3.common.MediaItem
 import com.github.pamugk.polyhymniamusicplayer.data.datasource.getArtists
-import com.github.pamugk.polyhymniamusicplayer.data.entity.Artist
 
 @Composable
 internal fun ArtistsFragment(padding: PaddingValues = PaddingValues()) {
     val context = LocalContext.current.applicationContext
-    val artists by produceState(initialValue = emptyList<Artist>()) {
+    val artists by produceState(initialValue = emptyList<MediaItem>()) {
         value = context.contentResolver.getArtists()
     }
 
     LazyColumn(modifier = Modifier.padding(padding)) {
         items(artists) { artist ->
-            Text(text = artist.name ?: "Unknown artist")
+            Text(text = artist.mediaMetadata.artist?.toString() ?: "Unknown artist")
         }
     }
 }
