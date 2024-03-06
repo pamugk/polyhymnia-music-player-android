@@ -100,14 +100,14 @@ internal fun NowPlayingFragment(
                 }
                 IconButton(
                     onClick = {
-                        if (controller.isPlaying) {
+                        if (playerState.isPlaying) {
                             controller.pause()
                         } else {
                             controller.play()
                         }
                     },
                 ) {
-                    if (controller.isPlaying) {
+                    if (playerState.isPlaying) {
                         Icon(
                             Icons.Default.Pause,
                             contentDescription = "Pause",
