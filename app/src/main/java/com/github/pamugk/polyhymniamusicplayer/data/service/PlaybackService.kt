@@ -2,29 +2,33 @@ package com.github.pamugk.polyhymniamusicplayer.data.service
 
 import android.content.Intent
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
 
-class PlaybackService : MediaSessionService() {
-    private lateinit var mediaSession: MediaSession
+class PlaybackService : MediaLibraryService() {
+    private lateinit var mediaLibrarySession: MediaLibrarySession
 
     override fun onCreate() {
         super.onCreate()
         val player = ExoPlayer.Builder(this).build()
-        mediaSession = MediaSession.Builder(this, player).build()
+        mediaLibrarySession = MediaLibrarySession.Builder(
+            this,
+            player,
+            PlaybackServiceCallback(this)
+        ).build()
     }
 
     override fun onDestroy() {
-        mediaSession.release()
-        mediaSession.player.release()
+        mediaLibrarySession.player.release()
+        mediaLibrarySession.release()
         super.onDestroy()
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession =
-        mediaSession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
+        mediaLibrarySession
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        if (!mediaSession.player.playWhenReady || mediaSession.player.mediaItemCount == 0) {
+        if (!mediaLibrarySession.player.playWhenReady || mediaLibrarySession.player.mediaItemCount == 0) {
             stopSelf()
         }
     }
