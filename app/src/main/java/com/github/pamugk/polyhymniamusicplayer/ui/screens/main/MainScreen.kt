@@ -98,7 +98,7 @@ fun MainScreen(controller: MediaController?) {
                 controller = controller,
                 padding = innerPadding
             )
-            Fragment.TRACKS -> TracksFragment(padding = innerPadding)
+            Fragment.TRACKS -> TracksFragment(controller = controller, padding = innerPadding)
             Fragment.ALBUMS -> AlbumsFragment(padding = innerPadding)
             Fragment.ARTISTS -> ArtistsFragment(padding = innerPadding)
             Fragment.GENRES -> GenresFragment(padding = innerPadding)

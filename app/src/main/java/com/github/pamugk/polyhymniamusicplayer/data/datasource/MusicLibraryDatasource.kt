@@ -2,11 +2,13 @@ package com.github.pamugk.polyhymniamusicplayer.data.datasource
 
 import android.content.ContentResolver
 import android.provider.MediaStore
+import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import com.github.pamugk.polyhymniamusicplayer.data.entity.Album
 import com.github.pamugk.polyhymniamusicplayer.data.entity.Artist
 import com.github.pamugk.polyhymniamusicplayer.data.entity.Genre
-import com.github.pamugk.polyhymniamusicplayer.data.entity.Track
 
 fun ContentResolver.getAlbums(): List<Album> {
     return this.query(
@@ -85,11 +87,12 @@ fun ContentResolver.getGenres(): List<Genre> {
     } ?: emptyList()
 }
 
-fun ContentResolver.getTracks(): List<Track> {
+fun ContentResolver.getTracks(): List<MediaItem> {
     return this.query(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         arrayOf(
             MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.ALBUM,
             MediaStore.Audio.Media.ALBUM_ARTIST,
             MediaStore.Audio.Media.ARTIST,
@@ -101,6 +104,7 @@ fun ContentResolver.getTracks(): List<Track> {
             MediaStore.Audio.Media.NUM_TRACKS,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.TRACK,
+            MediaStore.Audio.Media.WRITER,
             MediaStore.Audio.Media.YEAR
         ),
         "${MediaStore.Audio.Media.IS_MUSIC} != 0",
@@ -108,28 +112,37 @@ fun ContentResolver.getTracks(): List<Track> {
         MediaStore.Audio.Media.DEFAULT_SORT_ORDER
     )?.use { cursor ->
         val idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
+        val pathIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
         val albumIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)
         val albumArtistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST)
         val artistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
-        val bitrateIndex = cursor.getColumnIndex(MediaStore.Audio.Media.BITRATE)
-        val cdTrackNumberIndex = cursor.getColumnIndex(MediaStore.Audio.Media.CD_TRACK_NUMBER)
         val composerIndex = cursor.getColumnIndex(MediaStore.Audio.Media.COMPOSER)
         val discNumberIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DISC_NUMBER)
-        val durationIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)
-        val numTracksIndex = cursor.getColumnIndex(MediaStore.Audio.Media.NUM_TRACKS)
         val titleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
-        val trackIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TRACK)
+        val writerIndex = cursor.getColumnIndex(MediaStore.Audio.Media.WRITER)
         val yearIndex = cursor.getColumnIndex(MediaStore.Audio.Media.YEAR)
 
-        val tracks = mutableListOf<Track>()
+        val tracks = mutableListOf<MediaItem>()
         while (cursor.moveToNext()) {
             tracks.add(
-                Track(
-                    id = cursor.getLong(idIndex),
-                    album = cursor.getStringOrNull(albumIndex),
-                    artist = cursor.getStringOrNull(artistIndex),
-                    title = cursor.getStringOrNull(titleIndex)
-                )
+                MediaItem.Builder()
+                    .setMediaId(cursor.getLong(idIndex).toString())
+                    .setMediaMetadata(
+                        MediaMetadata.Builder()
+                            .setAlbumTitle(cursor.getStringOrNull(albumIndex))
+                            .setAlbumArtist(cursor.getStringOrNull(albumArtistIndex))
+                            .setArtist(cursor.getStringOrNull(artistIndex))
+                            .setComposer(cursor.getStringOrNull(composerIndex))
+                            .setDiscNumber(cursor.getIntOrNull(discNumberIndex))
+                            .setIsBrowsable(false)
+                            .setIsPlayable(true)
+                            .setRecordingYear(cursor.getIntOrNull(yearIndex))
+                            .setTitle(cursor.getStringOrNull(titleIndex))
+                            .setWriter(cursor.getStringOrNull(writerIndex))
+                            .build()
+                    )
+                    .setUri(cursor.getString(pathIndex))
+                    .build()
             )
         }
         return tracks
