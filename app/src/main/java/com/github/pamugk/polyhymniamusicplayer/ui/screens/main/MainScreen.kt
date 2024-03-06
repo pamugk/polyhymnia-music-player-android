@@ -1,13 +1,13 @@
 package com.github.pamugk.polyhymniamusicplayer.ui.screens.main
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.Label
+import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,9 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.media3.session.MediaController
 
 private enum class Fragment {
     NOW_PLAYING,
+    TRACKS,
     ALBUMS,
     ARTISTS,
     GENRES
@@ -40,16 +42,17 @@ private data class Destination(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(controller: MediaController?) {
     var searchBarActive by remember { mutableStateOf(false) }
     var searchBarQuery by remember { mutableStateOf("") }
 
     var currentFragment by remember { mutableStateOf(Fragment.NOW_PLAYING) }
     val destinations = listOf(
         Destination(Fragment.NOW_PLAYING, "Now Playing", Icons.Default.PlayCircle),
+        Destination(Fragment.TRACKS, "Tracks", Icons.Default.Audiotrack),
         Destination(Fragment.ALBUMS, "Albums", Icons.Default.Album),
         Destination(Fragment.ARTISTS, "Artists", Icons.Default.Person),
-        Destination(Fragment.GENRES, "Genres", Icons.Default.Label),
+        Destination(Fragment.GENRES, "Genres", Icons.AutoMirrored.Filled.Label),
     )
 
     Scaffold(
@@ -71,16 +74,10 @@ fun MainScreen() {
                     if (currentFragment != Fragment.NOW_PLAYING) {
                         IconButton(onClick = { /*TODO*/ }) {
                             Icon(
-                                Icons.Default.Sort,
+                                Icons.AutoMirrored.Filled.Sort,
                                 contentDescription = "Settings",
                             )
                         }
-                    }
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Settings",
-                        )
                     }
                 }
             )
@@ -97,10 +94,14 @@ fun MainScreen() {
         }
     ) { innerPadding ->
         when(currentFragment) {
-            Fragment.NOW_PLAYING -> NowPlayingFragment(innerPadding)
-            Fragment.ALBUMS -> AlbumsFragment(innerPadding)
-            Fragment.ARTISTS -> ArtistsFragment(innerPadding)
-            Fragment.GENRES -> GenresFragment(innerPadding)
+            Fragment.NOW_PLAYING -> NowPlayingFragment(
+                controller = controller,
+                padding = innerPadding
+            )
+            Fragment.TRACKS -> TracksFragment(controller = controller, padding = innerPadding)
+            Fragment.ALBUMS -> AlbumsFragment(padding = innerPadding)
+            Fragment.ARTISTS -> ArtistsFragment(padding = innerPadding)
+            Fragment.GENRES -> GenresFragment(padding = innerPadding)
         }
     }
 }
@@ -109,6 +110,6 @@ fun MainScreen() {
 @Preview
 private fun MainScreePreview() {
     MaterialTheme {
-        MainScreen()
+        MainScreen(null)
     }
 }
