@@ -55,8 +55,12 @@ dependencies {
     // Core extensions
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.lifecycle:lifecycle-service:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    // Kotlin extensions
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.8.0")
 
     // Media3
     val mediaVersion = "1.2.1"

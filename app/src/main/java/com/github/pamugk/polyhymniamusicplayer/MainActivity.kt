@@ -16,7 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
-import com.github.pamugk.polyhymniamusicplayer.data.controller.rememberMediaController
+import com.github.pamugk.polyhymniamusicplayer.data.controller.rememberMediaBrowser
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.forbidden.ForbiddenScreen
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.main.MainScreen
 
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
 
             MaterialTheme {
                 if (enoughPermissions) {
-                    val controller by rememberMediaController()
+                    val controller by rememberMediaBrowser()
                     MainScreen(controller)
                 } else {
                     ForbiddenScreen()

@@ -9,15 +9,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaItem
-import com.github.pamugk.polyhymniamusicplayer.data.datasource.getGenres
+import androidx.media3.session.MediaBrowser
+import kotlinx.coroutines.guava.await
 
 @Composable
-internal fun GenresFragment(padding: PaddingValues = PaddingValues()) {
-    val context = LocalContext.current
+internal fun GenresFragment(
+    mediaBrowser: MediaBrowser,
+    padding: PaddingValues = PaddingValues()
+) {
     val genres by produceState(initialValue = emptyList<MediaItem>()) {
-        value = context.contentResolver.getGenres()
+        val response = mediaBrowser.getChildren("genres", 0, 100, null).await()
+        value = response.value ?: emptyList()
     }
     
     LazyColumn(modifier = Modifier.padding(padding)) {

@@ -8,20 +8,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.media3.session.MediaController
+import androidx.media3.session.MediaBrowser
 
 @Composable
-fun rememberMediaController(
+fun rememberMediaBrowser(
     lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle
-): State<MediaController?> {
+): State<MediaBrowser?> {
     val appContext = LocalContext.current.applicationContext
-    val controllerManager = remember { MediaControllerManager.getInstance(appContext) }
+    val mediaBrowserManager = remember { MediaBrowserManager.getInstance(appContext) }
 
     DisposableEffect(lifecycle) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_START -> controllerManager.initialize()
-                Lifecycle.Event.ON_STOP -> controllerManager.release()
+                Lifecycle.Event.ON_START -> mediaBrowserManager.initialize()
+                Lifecycle.Event.ON_STOP -> mediaBrowserManager.release()
                 else -> {}
             }
         }
@@ -29,5 +29,5 @@ fun rememberMediaController(
         onDispose { lifecycle.removeObserver(observer) }
     }
 
-    return controllerManager.controller
+    return mediaBrowserManager.mediaBrowser
 }

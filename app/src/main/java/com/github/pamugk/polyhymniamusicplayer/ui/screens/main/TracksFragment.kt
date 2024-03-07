@@ -10,16 +10,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaItem
-import androidx.media3.session.MediaController
-import com.github.pamugk.polyhymniamusicplayer.data.datasource.getTracks
+import androidx.media3.session.MediaBrowser
+import kotlinx.coroutines.guava.await
 
 @Composable
-internal fun TracksFragment(controller: MediaController? = null, padding: PaddingValues = PaddingValues()) {
-    val context = LocalContext.current
+internal fun TracksFragment(
+    mediaBrowser: MediaBrowser,
+    padding: PaddingValues = PaddingValues()
+) {
     val tracks by produceState(initialValue = emptyList<MediaItem>()) {
-        value = context.contentResolver.getTracks()
+        val response = mediaBrowser.getChildren("tracks", 0, 100, null).await()
+        value = response.value ?: emptyList()
     }
 
     LazyColumn(modifier = Modifier.padding(padding)) {
@@ -27,7 +29,7 @@ internal fun TracksFragment(controller: MediaController? = null, padding: Paddin
             Text(
                 text = track.mediaMetadata.title?.toString() ?: "Unknown track",
                 modifier = Modifier.clickable {
-                    controller?.setMediaItem(track)
+                    mediaBrowser.setMediaItem(track)
                 })
         }
     }
