@@ -49,6 +49,13 @@ class MusicLibraryDatasource(private val contentResolver: ContentResolver) {
         } ?: emptyList()
     }
 
+    suspend fun getAlbumTracks(id: String) = withContext(Dispatchers.IO) {
+        getTracksInternal(
+            filter = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.ALBUM_ID} = ?",
+            filterParams = arrayOf(id)
+        )
+    }
+
     suspend fun getArtists() = withContext(Dispatchers.IO) {
         contentResolver.query(
             MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
@@ -83,6 +90,13 @@ class MusicLibraryDatasource(private val contentResolver: ContentResolver) {
                 }
             }.toList()
         } ?: emptyList()
+    }
+
+    suspend fun getArtistTracks(id: String) = withContext(Dispatchers.IO) {
+        getTracksInternal(
+            filter = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.ARTIST_ID} = ?",
+            filterParams = arrayOf(id)
+        )
     }
 
     suspend fun getGenres() = withContext(Dispatchers.IO) {
@@ -120,67 +134,79 @@ class MusicLibraryDatasource(private val contentResolver: ContentResolver) {
         } ?: emptyList()
     }
 
-    suspend fun getTracks() = withContext(Dispatchers.IO) {
-        contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            arrayOf(
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.ALBUM_ARTIST,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.BITRATE,
-                MediaStore.Audio.Media.CD_TRACK_NUMBER,
-                MediaStore.Audio.Media.COMPOSER,
-                MediaStore.Audio.Media.DISC_NUMBER,
-                MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.NUM_TRACKS,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.TRACK,
-                MediaStore.Audio.Media.WRITER,
-                MediaStore.Audio.Media.YEAR
-            ),
-            "${MediaStore.Audio.Media.IS_MUSIC} != 0",
-            emptyArray(),
-            MediaStore.Audio.Media.DEFAULT_SORT_ORDER
-        )?.use { cursor ->
-            val idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
-            val pathIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-            val albumIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)
-            val albumArtistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST)
-            val artistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
-            val composerIndex = cursor.getColumnIndex(MediaStore.Audio.Media.COMPOSER)
-            val discNumberIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DISC_NUMBER)
-            val titleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
-            val writerIndex = cursor.getColumnIndex(MediaStore.Audio.Media.WRITER)
-            val yearIndex = cursor.getColumnIndex(MediaStore.Audio.Media.YEAR)
-
-            generateSequence {
-                if (cursor.moveToNext()) {
-                    val item = MediaItem.Builder()
-                        .setMediaId(cursor.getLong(idIndex).toString())
-                        .setMediaMetadata(
-                            MediaMetadata.Builder()
-                                .setAlbumTitle(cursor.getStringOrNull(albumIndex))
-                                .setAlbumArtist(cursor.getStringOrNull(albumArtistIndex))
-                                .setArtist(cursor.getStringOrNull(artistIndex))
-                                .setComposer(cursor.getStringOrNull(composerIndex))
-                                .setDiscNumber(cursor.getIntOrNull(discNumberIndex))
-                                .setIsBrowsable(false)
-                                .setIsPlayable(true)
-                                .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
-                                .setRecordingYear(cursor.getIntOrNull(yearIndex))
-                                .setTitle(cursor.getStringOrNull(titleIndex))
-                                .setWriter(cursor.getStringOrNull(writerIndex))
-                                .build()
-                        )
-                        .setUri(cursor.getString(pathIndex))
-                        .build()
-                    item
-                } else {
-                    null
-                }
-            }.toList()
-        } ?: emptyList()
+    suspend fun getGenreTracks(id: String) = withContext(Dispatchers.IO) {
+        getTracksInternal(
+            filter = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.GENRE_ID} = ?",
+            filterParams = arrayOf(id)
+        )
     }
+
+    suspend fun getTracks() = withContext(Dispatchers.IO) {
+        getTracksInternal()
+    }
+
+    private fun getTracksInternal(
+        filter: String = "${MediaStore.Audio.Media.IS_MUSIC} != 0",
+        filterParams: Array<String> = emptyArray()
+    ) = contentResolver.query(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.ALBUM_ARTIST,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.BITRATE,
+            MediaStore.Audio.Media.CD_TRACK_NUMBER,
+            MediaStore.Audio.Media.COMPOSER,
+            MediaStore.Audio.Media.DISC_NUMBER,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.NUM_TRACKS,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.TRACK,
+            MediaStore.Audio.Media.WRITER,
+            MediaStore.Audio.Media.YEAR
+        ),
+        filter,
+        filterParams,
+        MediaStore.Audio.Media.DEFAULT_SORT_ORDER
+    )?.use { cursor ->
+        val idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
+        val pathIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+        val albumIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)
+        val albumArtistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST)
+        val artistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+        val composerIndex = cursor.getColumnIndex(MediaStore.Audio.Media.COMPOSER)
+        val discNumberIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DISC_NUMBER)
+        val titleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
+        val writerIndex = cursor.getColumnIndex(MediaStore.Audio.Media.WRITER)
+        val yearIndex = cursor.getColumnIndex(MediaStore.Audio.Media.YEAR)
+
+        generateSequence {
+            if (cursor.moveToNext()) {
+                val item = MediaItem.Builder()
+                    .setMediaId(cursor.getLong(idIndex).toString())
+                    .setMediaMetadata(
+                        MediaMetadata.Builder()
+                            .setAlbumTitle(cursor.getStringOrNull(albumIndex))
+                            .setAlbumArtist(cursor.getStringOrNull(albumArtistIndex))
+                            .setArtist(cursor.getStringOrNull(artistIndex))
+                            .setComposer(cursor.getStringOrNull(composerIndex))
+                            .setDiscNumber(cursor.getIntOrNull(discNumberIndex))
+                            .setIsBrowsable(false)
+                            .setIsPlayable(true)
+                            .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
+                            .setRecordingYear(cursor.getIntOrNull(yearIndex))
+                            .setTitle(cursor.getStringOrNull(titleIndex))
+                            .setWriter(cursor.getStringOrNull(writerIndex))
+                            .build()
+                    )
+                    .setUri(cursor.getString(pathIndex))
+                    .build()
+                item
+            } else {
+                null
+            }
+        }.toList()
+    } ?: emptyList()
 }

@@ -17,22 +17,23 @@ import com.github.pamugk.polyhymniamusicplayer.R
 import kotlinx.coroutines.guava.await
 
 @Composable
-fun GenresScreen(
+fun GenreScreen(
+    id: String,
     mediaBrowser: MediaBrowser,
-    onGenreSelected: (String) -> Unit = {},
     padding: PaddingValues = PaddingValues()
 ) {
-    val genres by produceState(initialValue = emptyList<MediaItem>()) {
-        val response = mediaBrowser.getChildren("genres", 0, 100, null).await()
+    val tracks by produceState(initialValue = emptyList<MediaItem>()) {
+        val response = mediaBrowser.getChildren("genres/$id", 0, 100, null).await()
         value = response.value ?: emptyList()
     }
 
     LazyColumn(modifier = Modifier.padding(padding)) {
-        items(genres) { genre ->
+        items(tracks) { track ->
             Text(
-                text = genre.mediaMetadata.genre?.toString() ?: stringResource(R.string.no_genre),
-                modifier = Modifier.clickable { onGenreSelected(genre.mediaId) }
-            )
+                text = track.mediaMetadata.title?.toString() ?: stringResource(R.string.no_track),
+                modifier = Modifier.clickable {
+                    mediaBrowser.setMediaItem(track)
+                })
         }
     }
 }

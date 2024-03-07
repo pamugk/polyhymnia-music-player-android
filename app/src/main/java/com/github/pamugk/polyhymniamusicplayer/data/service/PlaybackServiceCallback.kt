@@ -112,7 +112,27 @@ internal class PlaybackServiceCallback(
             LIBRARY_TRACKS_SECTION_ID -> coroutineScope.future {
                 LibraryResult.ofItemList(datasource.getTracks(), params)
             }
-            else -> Futures.immediateFuture(LibraryResult.ofItemList(emptyList(), params))
+            else -> when {
+                parentId.startsWith("albums/") -> coroutineScope.future {
+                    LibraryResult.ofItemList(
+                        datasource.getAlbumTracks(parentId.substringAfter("albums/")),
+                        params
+                    )
+                }
+                parentId.startsWith("artists/") -> coroutineScope.future {
+                    LibraryResult.ofItemList(
+                        datasource.getArtistTracks(parentId.substringAfter("artists/")),
+                        params
+                    )
+                }
+                parentId.startsWith("genres/") -> coroutineScope.future {
+                    LibraryResult.ofItemList(
+                        datasource.getGenreTracks(parentId.substringAfter("genres/")),
+                        params
+                    )
+                }
+                else -> Futures.immediateFuture(LibraryResult.ofItemList(emptyList(), params))
+            }
         }
 
     override fun onSearch(

@@ -47,11 +47,15 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.pamugk.polyhymniamusicplayer.data.controller.rememberMediaBrowser
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.AlbumScreen
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.AlbumsScreen
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.ArtistScreen
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.ArtistsScreen
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.ForbiddenScreen
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.GenreScreen
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.GenresScreen
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.NowPlayingScreen
 import com.github.pamugk.polyhymniamusicplayer.ui.screens.TracksScreen
@@ -96,11 +100,11 @@ private sealed class Destination(
     @StringRes val resourceId: Int,
     val icon: ImageVector
 ) {
-    data object Albums : Destination("albums", R.string.albums, Icons.Default.PlayCircle)
-    data object Artists : Destination("artists", R.string.artists, Icons.Default.Audiotrack)
-    data object Genres : Destination("genres", R.string.genres, Icons.Default.Album)
-    data object NowPlaying : Destination("now-playing", R.string.now_playing, Icons.Default.Person)
-    data object Tracks : Destination("tracks", R.string.tracks, Icons.AutoMirrored.Filled.Label)
+    data object Albums : Destination("albums", R.string.albums, Icons.Default.Album)
+    data object Artists : Destination("artists", R.string.artists, Icons.Default.Person)
+    data object Genres : Destination("genres", R.string.genres, Icons.AutoMirrored.Filled.Label)
+    data object NowPlaying : Destination("now-playing", R.string.now_playing, Icons.Default.PlayCircle)
+    data object Tracks : Destination("tracks", R.string.tracks, Icons.Default.Audiotrack)
 }
 
 @Composable
@@ -149,7 +153,6 @@ private fun ApplicationRoot(mediaBrowser: MediaBrowser? = null) {
                                     // Restore state when reselecting a previously selected item
                                     restoreState = true
                                 }
-
                             },
                             icon = {
                                 Icon(
@@ -162,14 +165,53 @@ private fun ApplicationRoot(mediaBrowser: MediaBrowser? = null) {
             }
         ) { innerPadding ->
             NavHost(navController = navController, startDestination = "now-playing") {
-                composable("albums") {
-                    AlbumsScreen(mediaBrowser = mediaBrowser, padding = innerPadding)
+                navigation(startDestination = "albums/list", route = "albums") {
+                    composable("albums/list") {
+                        AlbumsScreen(
+                            mediaBrowser = mediaBrowser,
+                            onAlbumSelected = { id -> navController.navigate("albums/$id") },
+                            padding = innerPadding
+                        )
+                    }
+                    composable("albums/{id}") { backStackEntry ->
+                        AlbumScreen(
+                            id = backStackEntry.arguments!!.getString("id")!!,
+                            mediaBrowser = mediaBrowser,
+                            padding = innerPadding
+                        )
+                    }
                 }
-                composable("artists") {
-                    ArtistsScreen(mediaBrowser = mediaBrowser, padding = innerPadding)
+                navigation(startDestination = "artists/list", route = "artists") {
+                    composable("artists/list") {
+                        ArtistsScreen(
+                            mediaBrowser = mediaBrowser,
+                            onArtistSelected = { id -> navController.navigate("artists/$id") },
+                            padding = innerPadding
+                        )
+                    }
+                    composable("artists/{id}") { backStackEntry ->
+                        ArtistScreen(
+                            id = backStackEntry.arguments!!.getString("id")!!,
+                            mediaBrowser = mediaBrowser,
+                            padding = innerPadding
+                        )
+                    }
                 }
-                composable("genres") {
-                    GenresScreen(mediaBrowser = mediaBrowser, padding = innerPadding)
+                navigation(startDestination = "genres/list", route = "genres") {
+                    composable("genres/list") {
+                        GenresScreen(
+                            mediaBrowser = mediaBrowser,
+                            onGenreSelected = { id -> navController.navigate("genres/$id") },
+                            padding = innerPadding
+                        )
+                    }
+                    composable("genres/{id}") { backStackEntry ->
+                        GenreScreen(
+                            id = backStackEntry.arguments!!.getString("id")!!,
+                            mediaBrowser = mediaBrowser,
+                            padding = innerPadding
+                        )
+                    }
                 }
                 composable("now-playing") {
                     NowPlayingScreen(player = mediaBrowser, padding = innerPadding)

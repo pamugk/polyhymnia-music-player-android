@@ -1,5 +1,6 @@
 package com.github.pamugk.polyhymniamusicplayer.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import kotlinx.coroutines.guava.await
 @Composable
 fun ArtistsScreen(
     mediaBrowser: MediaBrowser,
+    onArtistSelected: (String) -> Unit = {},
     padding: PaddingValues = PaddingValues()
 ) {
     val artists by produceState(initialValue = emptyList<MediaItem>()) {
@@ -27,7 +29,10 @@ fun ArtistsScreen(
 
     LazyColumn(modifier = Modifier.padding(padding)) {
         items(artists) { artist ->
-            Text(text = artist.mediaMetadata.artist?.toString() ?: stringResource(R.string.no_artist))
+            Text(
+                text = artist.mediaMetadata.artist?.toString() ?: stringResource(R.string.no_artist),
+                modifier = Modifier.clickable { onArtistSelected(artist.mediaId) }
+            )
         }
     }
 }
