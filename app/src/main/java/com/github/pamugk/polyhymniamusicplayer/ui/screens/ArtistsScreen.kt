@@ -1,4 +1,4 @@
-package com.github.pamugk.polyhymniamusicplayer.ui.screens.main
+package com.github.pamugk.polyhymniamusicplayer.ui.screens
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -9,23 +9,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaBrowser
+import com.github.pamugk.polyhymniamusicplayer.R
 import kotlinx.coroutines.guava.await
 
 @Composable
-internal fun GenresFragment(
+fun ArtistsScreen(
     mediaBrowser: MediaBrowser,
     padding: PaddingValues = PaddingValues()
 ) {
-    val genres by produceState(initialValue = emptyList<MediaItem>()) {
-        val response = mediaBrowser.getChildren("genres", 0, 100, null).await()
+    val artists by produceState(initialValue = emptyList<MediaItem>()) {
+        val response = mediaBrowser.getChildren("artists", 0, 100, null).await()
         value = response.value ?: emptyList()
     }
-    
+
     LazyColumn(modifier = Modifier.padding(padding)) {
-        items(genres) { genre ->
-            Text(text = genre.mediaMetadata.genre?.toString() ?: "Unknown genre")
+        items(artists) { artist ->
+            Text(text = artist.mediaMetadata.artist?.toString() ?: stringResource(R.string.no_artist))
         }
     }
 }

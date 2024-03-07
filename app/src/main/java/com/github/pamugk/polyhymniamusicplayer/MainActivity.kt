@@ -9,16 +9,52 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.media3.session.MediaBrowser
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.github.pamugk.polyhymniamusicplayer.data.controller.rememberMediaBrowser
-import com.github.pamugk.polyhymniamusicplayer.ui.screens.forbidden.ForbiddenScreen
-import com.github.pamugk.polyhymniamusicplayer.ui.screens.main.MainScreen
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.AlbumsScreen
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.ArtistsScreen
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.ForbiddenScreen
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.GenresScreen
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.NowPlayingScreen
+import com.github.pamugk.polyhymniamusicplayer.ui.screens.TracksScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -46,9 +82,100 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 if (enoughPermissions) {
                     val controller by rememberMediaBrowser()
-                    MainScreen(controller)
+                    ApplicationRoot(controller)
                 } else {
                     ForbiddenScreen()
+                }
+            }
+        }
+    }
+}
+
+private sealed class Destination(
+    val route: String,
+    @StringRes val resourceId: Int,
+    val icon: ImageVector
+) {
+    data object Albums : Destination("albums", R.string.albums, Icons.Default.PlayCircle)
+    data object Artists : Destination("artists", R.string.artists, Icons.Default.Audiotrack)
+    data object Genres : Destination("genres", R.string.genres, Icons.Default.Album)
+    data object NowPlaying : Destination("now-playing", R.string.now_playing, Icons.Default.Person)
+    data object Tracks : Destination("tracks", R.string.tracks, Icons.AutoMirrored.Filled.Label)
+}
+
+@Composable
+private fun ApplicationRoot(mediaBrowser: MediaBrowser? = null) {
+    if (mediaBrowser == null) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(
+                modifier = Modifier.width(128.dp),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "Player initialization…")
+        }
+    } else {
+        val destinations = listOf(
+            Destination.NowPlaying,
+            Destination.Tracks,
+            Destination.Albums,
+            Destination.Artists,
+            Destination.Genres
+        )
+
+        val navController = rememberNavController()
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+
+                    destinations.forEach { destination ->
+                        NavigationBarItem(
+                            selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true,
+                            onClick = {
+                                navController.navigate(destination.route) {
+                                    // Pop up to the start destination of the graph to
+                                    // avoid building up a large stack of destinations
+                                    // on the back stack as users select items
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    // Avoid multiple copies of the same destination when
+                                    // reselecting the same item
+                                    launchSingleTop = true
+                                    // Restore state when reselecting a previously selected item
+                                    restoreState = true
+                                }
+
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = destination.icon,
+                                    contentDescription = stringResource(destination.resourceId)
+                                )
+                            })
+                    }
+                }
+            }
+        ) { innerPadding ->
+            NavHost(navController = navController, startDestination = "now-playing") {
+                composable("albums") {
+                    AlbumsScreen(mediaBrowser = mediaBrowser, padding = innerPadding)
+                }
+                composable("artists") {
+                    ArtistsScreen(mediaBrowser = mediaBrowser, padding = innerPadding)
+                }
+                composable("genres") {
+                    GenresScreen(mediaBrowser = mediaBrowser, padding = innerPadding)
+                }
+                composable("now-playing") {
+                    NowPlayingScreen(player = mediaBrowser, padding = innerPadding)
+                }
+                composable("tracks") {
+                    TracksScreen(mediaBrowser = mediaBrowser, padding = innerPadding)
                 }
             }
         }

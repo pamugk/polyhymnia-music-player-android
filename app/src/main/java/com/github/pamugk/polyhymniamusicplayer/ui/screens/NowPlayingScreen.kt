@@ -1,16 +1,13 @@
-package com.github.pamugk.polyhymniamusicplayer.ui.screens.main
+package com.github.pamugk.polyhymniamusicplayer.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.FastForward
@@ -19,26 +16,22 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.media3.common.Player
+import com.github.pamugk.polyhymniamusicplayer.R
 import com.github.pamugk.polyhymniamusicplayer.ui.state.rememberMediaState
 import kotlin.math.max
 
 @Composable
-internal fun NowPlayingFragment(
+fun NowPlayingScreen(
     player: Player,
     padding: PaddingValues = PaddingValues()
 ) {
@@ -51,16 +44,15 @@ internal fun NowPlayingFragment(
         horizontalAlignment = Alignment.CenterHorizontally) {
         Image(
             imageVector = Icons.Default.BrokenImage,
-            contentDescription = "Album cover",
+            contentDescription = stringResource(R.string.album_cover),
             modifier = Modifier.fillMaxSize(0.8f),
             alignment = Alignment.Center,
             contentScale = ContentScale.Fit,
         )
-        Text(text = playerState.mediaMetadata.title?.toString() ?: "No track is playing")
-        Text(text = playerState.mediaMetadata.albumTitle?.toString() ?: "Unknown album")
-        Text(text = playerState.mediaMetadata.artist ?.toString() ?: "Unknown artist")
+        Text(text = playerState.mediaMetadata.title?.toString() ?: stringResource(R.string.no_track_playing))
+        Text(text = playerState.mediaMetadata.albumTitle?.toString() ?: stringResource(R.string.no_album))
+        Text(text = playerState.mediaMetadata.artist ?.toString() ?: stringResource(R.string.no_artist))
         Slider(
-            modifier = Modifier.semantics { contentDescription = "Playback slider" },
             onValueChange = { player.seekTo(it.toLong()) },
             value = player.currentPosition.toFloat(),
             valueRange = 0f..max(player.duration.toFloat(), 0f)
@@ -72,7 +64,7 @@ internal fun NowPlayingFragment(
             ) {
                 Icon(
                     Icons.Default.SkipPrevious,
-                    contentDescription = "Previous",
+                    contentDescription = stringResource(R.string.previous),
                 )
             }
             IconButton(
@@ -81,7 +73,7 @@ internal fun NowPlayingFragment(
             ) {
                 Icon(
                     Icons.Default.FastRewind,
-                    contentDescription = "Fast rewind",
+                    contentDescription = stringResource(R.string.fast_rewind),
                 )
             }
             IconButton(
@@ -96,12 +88,12 @@ internal fun NowPlayingFragment(
                 if (playerState.isPlaying) {
                     Icon(
                         Icons.Default.Pause,
-                        contentDescription = "Pause",
+                        contentDescription = stringResource(R.string.pause),
                     )
                 } else {
                     Icon(
                         Icons.Default.PlayArrow,
-                        contentDescription = "Play",
+                        contentDescription = stringResource(R.string.play),
                     )
                 }
             }
@@ -111,7 +103,7 @@ internal fun NowPlayingFragment(
             ) {
                 Icon(
                     Icons.Default.FastForward,
-                    contentDescription = "Fast-forward",
+                    contentDescription = stringResource(R.string.fast_forward),
                 )
             }
             IconButton(
@@ -120,7 +112,7 @@ internal fun NowPlayingFragment(
             ) {
                 Icon(
                     Icons.Default.SkipNext,
-                    contentDescription = "Next",
+                    contentDescription = stringResource(R.string.next),
                 )
             }
         }

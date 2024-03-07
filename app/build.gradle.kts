@@ -52,18 +52,22 @@ android {
 }
 
 dependencies {
+    val lifecycleVersion = "2.7.0"
+    val mediaVersion = "1.2.1"
+    val navigationVersion = "2.7.7"
+
     // Core extensions
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-service:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-service:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
+    implementation("androidx.navigation:navigation-compose:$navigationVersion")
 
     // Kotlin extensions
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.8.0")
 
     // Media3
-    val mediaVersion = "1.2.1"
     implementation("androidx.media3:media3-exoplayer:$mediaVersion")
     implementation("androidx.media3:media3-session:$mediaVersion")
     implementation("androidx.media3:media3-ui:$mediaVersion")
