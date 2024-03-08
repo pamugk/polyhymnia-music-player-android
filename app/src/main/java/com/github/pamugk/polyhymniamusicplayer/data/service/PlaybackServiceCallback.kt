@@ -163,6 +163,28 @@ internal class PlaybackServiceCallback(
         return super.onSetRating(session, controller, rating)
     }
 
+    override fun onAddMediaItems(
+        mediaSession: MediaSession,
+        controller: MediaSession.ControllerInfo,
+        mediaItems: MutableList<MediaItem>
+    ): ListenableFuture<MutableList<MediaItem>> {
+        val unknownItemsIds = mediaItems.filter { it.localConfiguration == null }.map { it.mediaId }
+        // Every media item URI is filled,
+        // no need to query DB
+        if (unknownItemsIds.isEmpty()) {
+            return Futures.immediateFuture(mediaItems)
+        }
+
+        return coroutineScope.future {
+            val pathsByIds = datasource.getFilePathsByTrackIds(unknownItemsIds)
+            mediaItems.map { mediaItem ->
+                pathsByIds[mediaItem.mediaId]?.let { filePath ->
+                    mediaItem.buildUpon().setUri(filePath).build()
+                } ?: mediaItem
+            }.toMutableList()
+        }
+    }
+
     private companion object {
         /* Library root */
         const val LIBRARY_ROOT_ID = "root"

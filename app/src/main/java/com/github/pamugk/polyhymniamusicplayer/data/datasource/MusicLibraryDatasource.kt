@@ -209,4 +209,28 @@ class MusicLibraryDatasource(private val contentResolver: ContentResolver) {
             }
         }.toList()
     } ?: emptyList()
+
+    suspend fun getFilePathsByTrackIds(ids: List<String>) = withContext(Dispatchers.IO) {
+        contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.DATA
+            ),
+            "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media._ID} IN (?)",
+            arrayOf(ids.joinToString(",")),
+            MediaStore.Audio.Media.DEFAULT_SORT_ORDER
+        )
+    }?.use { cursor ->
+        val idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
+        val pathIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+
+        generateSequence {
+            if (cursor.moveToNext()) {
+                Pair(cursor.getLong(idIndex).toString(), cursor.getString(pathIndex))
+            } else {
+                null
+            }
+        }.toMap()
+    } ?: emptyMap()
 }
