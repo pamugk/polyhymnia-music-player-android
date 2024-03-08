@@ -1,94 +1,154 @@
 package com.github.pamugk.polyhymniamusicplayer.data.datasource
 
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.provider.MediaStore
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.github.pamugk.polyhymniamusicplayer.data.entity.Album
-import com.github.pamugk.polyhymniamusicplayer.data.entity.Artist
-import com.github.pamugk.polyhymniamusicplayer.data.entity.Genre
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-fun ContentResolver.getAlbums(): List<Album> {
-    return this.query(
-        MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-        arrayOf(
-            MediaStore.Audio.Albums._ID,
-            MediaStore.Audio.Albums.ALBUM,
-            MediaStore.Audio.Albums.FIRST_YEAR,
-            MediaStore.Audio.Albums.LAST_YEAR
-        ),
-        null,
-        emptyArray(),
-        MediaStore.Audio.Albums.DEFAULT_SORT_ORDER,
-    )?.use { cursor ->
-        val idIndex = cursor.getColumnIndex(MediaStore.Audio.Albums._ID)
-        val albumIndex = cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)
+class MusicLibraryDatasource(private val contentResolver: ContentResolver) {
+    suspend fun getAlbums() = withContext(Dispatchers.IO) {
+        contentResolver.query(
+            MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+            arrayOf(
+                MediaStore.Audio.Albums._ID,
+                MediaStore.Audio.Albums.ALBUM,
+                MediaStore.Audio.Albums.FIRST_YEAR,
+                MediaStore.Audio.Albums.LAST_YEAR
+            ),
+            null,
+            emptyArray(),
+            MediaStore.Audio.Albums.DEFAULT_SORT_ORDER
+        )?.use { cursor ->
+            val idIndex = cursor.getColumnIndex(MediaStore.Audio.Albums._ID)
+            val albumIndex = cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)
 
-        val albums = mutableListOf<Album>()
-        while (cursor.moveToNext()) {
-            albums.add(Album(
-                id = cursor.getLong(idIndex),
-                title = cursor.getStringOrNull(albumIndex)
-            ))
-        }
-        return albums
-    } ?: emptyList()
-}
+            generateSequence {
+                if (cursor.moveToNext()) {
+                    val id = cursor.getLong(idIndex)
+                    MediaItem.Builder()
+                        .setMediaId(cursor.getLong(idIndex).toString())
+                        .setMediaMetadata(
+                            MediaMetadata.Builder()
+                                .setAlbumTitle(cursor.getStringOrNull(albumIndex))
+                                .setIsBrowsable(true)
+                                .setIsPlayable(true)
+                                .setMediaType(MediaMetadata.MEDIA_TYPE_ALBUM)
+                                .build()
+                        )
+                        .setUri(ContentUris.withAppendedId(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI, id))
+                        .build()
+                } else {
+                    null
+                }
+            }.toList()
+        } ?: emptyList()
+    }
 
-fun ContentResolver.getArtists(): List<Artist> {
-    return this.query(
-        MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-        arrayOf(
-            MediaStore.Audio.Artists._ID,
-            MediaStore.Audio.Artists.ARTIST
-        ),
-        null,
-        emptyArray(),
-        MediaStore.Audio.Artists.DEFAULT_SORT_ORDER,
-    )?.use { cursor ->
-        val idIndex = cursor.getColumnIndex(MediaStore.Audio.Artists._ID)
-        val nameIndex = cursor.getColumnIndex(MediaStore.Audio.Artists.ARTIST)
+    suspend fun getAlbumTracks(id: String) = withContext(Dispatchers.IO) {
+        getTracksInternal(
+            filter = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.ALBUM_ID} = ?",
+            filterParams = arrayOf(id)
+        )
+    }
 
-        val artists = mutableListOf<Artist>()
-        while (cursor.moveToNext()) {
-            artists.add(Artist(
-                id = cursor.getLong(idIndex),
-                name = cursor.getStringOrNull(nameIndex)
-            ))
-        }
-        return artists
-    } ?: emptyList()
-}
+    suspend fun getArtists() = withContext(Dispatchers.IO) {
+        contentResolver.query(
+            MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+            arrayOf(
+                MediaStore.Audio.Artists._ID,
+                MediaStore.Audio.Artists.ARTIST
+            ),
+            null,
+            emptyArray(),
+            MediaStore.Audio.Artists.DEFAULT_SORT_ORDER
+        )?.use { cursor ->
+            val idIndex = cursor.getColumnIndex(MediaStore.Audio.Artists._ID)
+            val nameIndex = cursor.getColumnIndex(MediaStore.Audio.Artists.ARTIST)
 
-fun ContentResolver.getGenres(): List<Genre> {
-    return this.query(
-        MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
-        arrayOf(
-            MediaStore.Audio.Genres._ID,
-            MediaStore.Audio.Genres.NAME
-        ),
-        null,
-        emptyArray(),
-        MediaStore.Audio.Genres.DEFAULT_SORT_ORDER,
-    )?.use { cursor ->
-        val idIndex = cursor.getColumnIndex(MediaStore.Audio.Genres._ID)
-        val nameIndex = cursor.getColumnIndex(MediaStore.Audio.Genres.NAME)
+            generateSequence {
+                if (cursor.moveToNext()) {
+                    val id = cursor.getLong(idIndex)
+                    MediaItem.Builder()
+                        .setMediaId(id.toString())
+                        .setMediaMetadata(
+                            MediaMetadata.Builder()
+                                .setArtist(cursor.getStringOrNull(nameIndex))
+                                .setIsBrowsable(true)
+                                .setIsPlayable(true)
+                                .setMediaType(MediaMetadata.MEDIA_TYPE_ARTIST)
+                                .build()
+                        )
+                        .setUri(ContentUris.withAppendedId(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI, id))
+                        .build()
+                } else {
+                    null
+                }
+            }.toList()
+        } ?: emptyList()
+    }
 
-        val genres = mutableListOf<Genre>()
-        while (cursor.moveToNext()) {
-            genres.add(Genre(
-                id = cursor.getLong(idIndex),
-                name = cursor.getStringOrNull(nameIndex)
-            ))
-        }
-        return genres
-    } ?: emptyList()
-}
+    suspend fun getArtistTracks(id: String) = withContext(Dispatchers.IO) {
+        getTracksInternal(
+            filter = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.ARTIST_ID} = ?",
+            filterParams = arrayOf(id)
+        )
+    }
 
-fun ContentResolver.getTracks(): List<MediaItem> {
-    return this.query(
+    suspend fun getGenres() = withContext(Dispatchers.IO) {
+        contentResolver.query(
+            MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
+            arrayOf(
+                MediaStore.Audio.Genres._ID,
+                MediaStore.Audio.Genres.NAME
+            ),
+            null,
+            emptyArray(),
+            MediaStore.Audio.Genres.DEFAULT_SORT_ORDER
+        )?.use { cursor ->
+            val idIndex = cursor.getColumnIndex(MediaStore.Audio.Genres._ID)
+            val nameIndex = cursor.getColumnIndex(MediaStore.Audio.Genres.NAME)
+
+            generateSequence {
+                if (cursor.moveToNext()) {
+                    val id = cursor.getLong(idIndex)
+                    MediaItem.Builder()
+                        .setMediaId(id.toString())
+                        .setMediaMetadata(
+                            MediaMetadata.Builder()
+                                .setGenre(cursor.getStringOrNull(nameIndex))
+                                .setIsBrowsable(true)
+                                .setIsPlayable(false)
+                                .build()
+                        )
+                        .setUri(ContentUris.withAppendedId(MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI, id))
+                        .build()
+                } else {
+                    null
+                }
+            }.toList()
+        } ?: emptyList()
+    }
+
+    suspend fun getGenreTracks(id: String) = withContext(Dispatchers.IO) {
+        getTracksInternal(
+            filter = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.GENRE_ID} = ?",
+            filterParams = arrayOf(id)
+        )
+    }
+
+    suspend fun getTracks() = withContext(Dispatchers.IO) {
+        getTracksInternal()
+    }
+
+    private fun getTracksInternal(
+        filter: String = "${MediaStore.Audio.Media.IS_MUSIC} != 0",
+        filterParams: Array<String> = emptyArray()
+    ) = contentResolver.query(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         arrayOf(
             MediaStore.Audio.Media._ID,
@@ -107,8 +167,8 @@ fun ContentResolver.getTracks(): List<MediaItem> {
             MediaStore.Audio.Media.WRITER,
             MediaStore.Audio.Media.YEAR
         ),
-        "${MediaStore.Audio.Media.IS_MUSIC} != 0",
-        emptyArray(),
+        filter,
+        filterParams,
         MediaStore.Audio.Media.DEFAULT_SORT_ORDER
     )?.use { cursor ->
         val idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
@@ -122,10 +182,9 @@ fun ContentResolver.getTracks(): List<MediaItem> {
         val writerIndex = cursor.getColumnIndex(MediaStore.Audio.Media.WRITER)
         val yearIndex = cursor.getColumnIndex(MediaStore.Audio.Media.YEAR)
 
-        val tracks = mutableListOf<MediaItem>()
-        while (cursor.moveToNext()) {
-            tracks.add(
-                MediaItem.Builder()
+        generateSequence {
+            if (cursor.moveToNext()) {
+                val item = MediaItem.Builder()
                     .setMediaId(cursor.getLong(idIndex).toString())
                     .setMediaMetadata(
                         MediaMetadata.Builder()
@@ -136,6 +195,7 @@ fun ContentResolver.getTracks(): List<MediaItem> {
                             .setDiscNumber(cursor.getIntOrNull(discNumberIndex))
                             .setIsBrowsable(false)
                             .setIsPlayable(true)
+                            .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
                             .setRecordingYear(cursor.getIntOrNull(yearIndex))
                             .setTitle(cursor.getStringOrNull(titleIndex))
                             .setWriter(cursor.getStringOrNull(writerIndex))
@@ -143,8 +203,34 @@ fun ContentResolver.getTracks(): List<MediaItem> {
                     )
                     .setUri(cursor.getString(pathIndex))
                     .build()
-            )
-        }
-        return tracks
+                item
+            } else {
+                null
+            }
+        }.toList()
     } ?: emptyList()
+
+    suspend fun getFilePathsByTrackIds(ids: List<String>) = withContext(Dispatchers.IO) {
+        contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.DATA
+            ),
+            "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media._ID} IN (?)",
+            arrayOf(ids.joinToString(",")),
+            MediaStore.Audio.Media.DEFAULT_SORT_ORDER
+        )
+    }?.use { cursor ->
+        val idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
+        val pathIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+
+        generateSequence {
+            if (cursor.moveToNext()) {
+                Pair(cursor.getLong(idIndex).toString(), cursor.getString(pathIndex))
+            } else {
+                null
+            }
+        }.toMap()
+    } ?: emptyMap()
 }

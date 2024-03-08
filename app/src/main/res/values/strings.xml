@@ -1,3 +1,24 @@
 <resources>
   <string name="app_name">Polyhymnia Music Player</string>
+
+  <string name="albums">Albums</string>
+  <string name="artists">Artists</string>
+  <string name="genres">Genres</string>
+  <string name="tracks">Tracks</string>
+  <string name="now_playing">Now Playing</string>
+
+  <string name="album_cover">Album cover</string>
+  <string name="fast_forward">Fast-forward</string>
+  <string name="fast_rewind">Fast rewind</string>
+  <string name="next">Next</string>
+  <string name="no_album">Unknown album</string>
+  <string name="no_artist">Unknown artist</string>
+  <string name="no_genre">Unknown genre</string>
+  <string name="no_permission">No permission</string>
+  <string name="no_track">No track is playing</string>
+  <string name="no_track_playing">No track is playing</string>
+  <string name="not_enough_permissions">Not enough permissions</string>
+  <string name="pause">Pause</string>
+  <string name="play">Play</string>
+  <string name="previous">Previous</string>
 </resources>
