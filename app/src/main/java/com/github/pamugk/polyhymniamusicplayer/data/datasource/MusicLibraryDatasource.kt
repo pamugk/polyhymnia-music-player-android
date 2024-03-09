@@ -3,10 +3,12 @@ package com.github.pamugk.polyhymniamusicplayer.data.datasource
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.provider.MediaStore
+import android.util.Size
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.github.pamugk.polyhymniamusicplayer.utils.convertToByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -184,13 +186,21 @@ class MusicLibraryDatasource(private val contentResolver: ContentResolver) {
 
         generateSequence {
             if (cursor.moveToNext()) {
+                val id = cursor.getLong(idIndex)
+                val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+                val albumCover = try {
+                    contentResolver.loadThumbnail(uri, Size(300, 300), null)
+                } catch (_: Exception) {
+                    null
+                }
                 val item = MediaItem.Builder()
-                    .setMediaId(cursor.getLong(idIndex).toString())
+                    .setMediaId(id.toString())
                     .setMediaMetadata(
                         MediaMetadata.Builder()
                             .setAlbumTitle(cursor.getStringOrNull(albumIndex))
                             .setAlbumArtist(cursor.getStringOrNull(albumArtistIndex))
                             .setArtist(cursor.getStringOrNull(artistIndex))
+                            .setArtworkData(albumCover?.convertToByteArray(), MediaMetadata.PICTURE_TYPE_FRONT_COVER)
                             .setComposer(cursor.getStringOrNull(composerIndex))
                             .setDiscNumber(cursor.getIntOrNull(discNumberIndex))
                             .setIsBrowsable(false)
