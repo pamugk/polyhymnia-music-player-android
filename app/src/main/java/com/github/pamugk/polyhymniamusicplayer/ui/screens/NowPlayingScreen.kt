@@ -1,5 +1,6 @@
 package com.github.pamugk.polyhymniamusicplayer.ui.screens
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.Player
@@ -36,19 +38,33 @@ fun NowPlayingScreen(
     padding: PaddingValues = PaddingValues()
 ) {
     val playerState = rememberMediaState(player = player).playerState
+    val albumCover = playerState.mediaMetadata.artworkData?.let { albumData ->
+        BitmapFactory.decodeByteArray(albumData, 0, albumData.size)
+    }
+
     Column(
         modifier = Modifier
             .padding(padding)
             .fillMaxSize(),
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally) {
-        Image(
-            imageVector = Icons.Default.BrokenImage,
-            contentDescription = stringResource(R.string.album_cover),
-            modifier = Modifier.fillMaxSize(0.8f),
-            alignment = Alignment.Center,
-            contentScale = ContentScale.Fit,
-        )
+        if (albumCover == null) {
+            Image(
+                imageVector = Icons.Default.BrokenImage,
+                contentDescription = stringResource(R.string.album_cover),
+                modifier = Modifier.fillMaxSize(0.8f),
+                alignment = Alignment.Center,
+                contentScale = ContentScale.Fit,
+            )
+        } else {
+            Image(
+                bitmap = albumCover.asImageBitmap(),
+                contentDescription = stringResource(R.string.album_cover),
+                modifier = Modifier.fillMaxSize(0.8f),
+                alignment = Alignment.Center,
+                contentScale = ContentScale.Fit,
+            )
+        }
         Text(text = playerState.mediaMetadata.title?.toString() ?: stringResource(R.string.no_track_playing))
         Text(text = playerState.mediaMetadata.albumTitle?.toString() ?: stringResource(R.string.no_album))
         Text(text = playerState.mediaMetadata.artist ?.toString() ?: stringResource(R.string.no_artist))

@@ -96,6 +96,10 @@ class PlayerState internal constructor(private val player: Player) {
             this@PlayerState.deviceVolume = volume
         }
 
+        override fun onEvents(player: Player, events: Player.Events) {
+            super.onEvents(player, events)
+        }
+
         override fun onIsLoadingChanged(isLoading: Boolean) {
             this@PlayerState.isLoading = isLoading
         }
