@@ -22,15 +22,21 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import com.github.pamugk.polyhymniamusicplayer.R
 import com.github.pamugk.polyhymniamusicplayer.ui.state.rememberMediaState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.math.max
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun NowPlayingScreen(
@@ -41,6 +47,13 @@ fun NowPlayingScreen(
     val albumCover = playerState.mediaMetadata.artworkData?.let { albumData ->
         BitmapFactory.decodeByteArray(albumData, 0, albumData.size)
     }
+    val currentPosition by produceState(initialValue = player.currentPosition) {
+        while (isActive) {
+            delay(500.milliseconds)
+            value = player.currentPosition
+        }
+    }
+    val trackAvailable = playerState.timeline != Timeline.EMPTY
 
     Column(
         modifier = Modifier
@@ -70,8 +83,9 @@ fun NowPlayingScreen(
         Text(text = playerState.mediaMetadata.artist ?.toString() ?: stringResource(R.string.no_artist))
         Slider(
             onValueChange = { player.seekTo(it.toLong()) },
-            value = player.currentPosition.toFloat(),
-            valueRange = 0f..max(player.duration.toFloat(), 0f)
+            value = currentPosition.toFloat(),
+            valueRange = 0f..max(player.duration.toFloat(), 0f),
+            enabled = trackAvailable
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
             IconButton(
@@ -85,7 +99,7 @@ fun NowPlayingScreen(
             }
             IconButton(
                 onClick = { player.seekBack() },
-                enabled = false
+                enabled = trackAvailable
             ) {
                 Icon(
                     Icons.Default.FastRewind,
@@ -100,6 +114,7 @@ fun NowPlayingScreen(
                         player.play()
                     }
                 },
+                enabled = trackAvailable
             ) {
                 if (playerState.isPlaying) {
                     Icon(
@@ -115,7 +130,7 @@ fun NowPlayingScreen(
             }
             IconButton(
                 onClick = { player.seekForward() },
-                enabled = false,
+                enabled = trackAvailable,
             ) {
                 Icon(
                     Icons.Default.FastForward,
