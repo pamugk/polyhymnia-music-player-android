@@ -1,6 +1,5 @@
 package com.github.pamugk.polyhymniamusicplayer.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,7 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Text
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -17,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaBrowser
 import com.github.pamugk.polyhymniamusicplayer.R
+import com.github.pamugk.polyhymniamusicplayer.ui.components.GenreListItem
 import com.github.pamugk.polyhymniamusicplayer.ui.components.Loader
 import com.github.pamugk.polyhymniamusicplayer.ui.components.StatusPage
 import com.github.pamugk.polyhymniamusicplayer.ui.data.Result
@@ -61,10 +61,8 @@ fun GenresScreen(
             } else {
                 LazyColumn(modifier = Modifier.padding(padding)) {
                     items(genres) { genre ->
-                        Text(
-                            text = genre.mediaMetadata.genre?.toString() ?: stringResource(R.string.no_genre),
-                            modifier = Modifier.clickable { onGenreSelected(genre.mediaId) }
-                        )
+                        GenreListItem(genre = genre, onClick = { onGenreSelected(genre.mediaId) })
+                        HorizontalDivider()
                     }
                 }
             }

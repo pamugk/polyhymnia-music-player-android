@@ -27,7 +27,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -65,17 +64,13 @@ fun NowPlayingScreen(
             Image(
                 imageVector = Icons.Default.BrokenImage,
                 contentDescription = stringResource(R.string.album_cover),
-                modifier = Modifier.fillMaxSize(0.8f),
-                alignment = Alignment.Center,
-                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize(0.8f)
             )
         } else {
             Image(
                 bitmap = albumCover.asImageBitmap(),
                 contentDescription = stringResource(R.string.album_cover),
-                modifier = Modifier.fillMaxSize(0.8f),
-                alignment = Alignment.Center,
-                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize(0.8f)
             )
         }
         Text(text = playerState.mediaMetadata.title?.toString() ?: stringResource(R.string.no_track_playing))

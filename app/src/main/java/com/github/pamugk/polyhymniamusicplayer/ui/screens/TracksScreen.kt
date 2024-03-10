@@ -1,6 +1,5 @@
 package com.github.pamugk.polyhymniamusicplayer.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,7 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Text
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -19,6 +18,7 @@ import androidx.media3.session.MediaBrowser
 import com.github.pamugk.polyhymniamusicplayer.R
 import com.github.pamugk.polyhymniamusicplayer.ui.components.Loader
 import com.github.pamugk.polyhymniamusicplayer.ui.components.StatusPage
+import com.github.pamugk.polyhymniamusicplayer.ui.components.TrackItem
 import com.github.pamugk.polyhymniamusicplayer.ui.data.Result
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.guava.await
@@ -60,11 +60,8 @@ fun TracksScreen(
             } else {
                 LazyColumn(modifier = Modifier.padding(padding)) {
                     items(tracks) { track ->
-                        Text(
-                            text = track.mediaMetadata.title?.toString() ?: stringResource(R.string.no_track),
-                            modifier = Modifier.clickable {
-                                mediaBrowser.setMediaItem(track)
-                            })
+                        TrackItem(track = track, onClick = { mediaBrowser.setMediaItem(it) })
+                        HorizontalDivider()
                     }
                 }
             }

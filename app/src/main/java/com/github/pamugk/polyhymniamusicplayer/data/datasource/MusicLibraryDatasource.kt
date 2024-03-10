@@ -18,9 +18,7 @@ class MusicLibraryDatasource(private val contentResolver: ContentResolver) {
             MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
             arrayOf(
                 MediaStore.Audio.Albums._ID,
-                MediaStore.Audio.Albums.ALBUM,
-                MediaStore.Audio.Albums.FIRST_YEAR,
-                MediaStore.Audio.Albums.LAST_YEAR
+                MediaStore.Audio.Albums.ALBUM
             ),
             null,
             emptyArray(),
@@ -32,11 +30,18 @@ class MusicLibraryDatasource(private val contentResolver: ContentResolver) {
             generateSequence {
                 if (cursor.moveToNext()) {
                     val id = cursor.getLong(idIndex)
+                    val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+                    val albumCover = try {
+                        contentResolver.loadThumbnail(uri, Size(300, 300), null)
+                    } catch (_: Exception) {
+                        null
+                    }
                     MediaItem.Builder()
                         .setMediaId(cursor.getLong(idIndex).toString())
                         .setMediaMetadata(
                             MediaMetadata.Builder()
                                 .setAlbumTitle(cursor.getStringOrNull(albumIndex))
+                                .setArtworkData(albumCover?.convertToByteArray(), MediaMetadata.PICTURE_TYPE_FRONT_COVER)
                                 .setIsBrowsable(true)
                                 .setIsPlayable(true)
                                 .setMediaType(MediaMetadata.MEDIA_TYPE_ALBUM)
