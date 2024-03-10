@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="albums">Альбомы</string>
+  <string name="artists">Исполнители</string>
+  <string name="genres">Жанры</string>
+  <string name="tracks">Треки</string>
+  <string name="now_playing">Сейчас играет</string>
+  <string name="album_cover">Обложка альбома</string>
+  <string name="fast_forward">Перемотать вперёд</string>
+  <string name="fast_rewind">Перемотать назад</string>
+  <string name="next">Следующий трек</string>
+  <string name="no_album">Неизвестный альбом</string>
+  <string name="no_artist">Неизвестный исполнитель</string>
+  <string name="no_genre">Неизвестный жанр</string>
+  <string name="no_permission">Нет разрешения</string>
+  <string name="no_track">Неизвестный трек</string>
+  <string name="no_track_playing">Ничего не воспроизводится</string>
+  <string name="not_enough_permissions">Недостаточно разрешений для работы приложения</string>
+  <string name="pause">Приостановить</string>
+  <string name="play">Воспроизвести</string>
+  <string name="previous">Предыдущий трек</string>
+  <string name="player_initialization">Инициализация проигрывателя…</string>
+  <string name="albums_loading">Идёт загрузка альбомов…</string>
+  <string name="nothing_found">Ничего не найдено</string>
+  <string name="no_albums_found">Альбомов не найдено</string>
+  <string name="error_occured">Произошла непредвиденная ошибка</string>
+  <string name="no_artists_found">Исполнителей не найдено</string>
+  <string name="no_genres_found">Жанров не найдено</string>
+  <string name="no_tracks_found">Треков не найдено</string>
+  <string name="artists_loading">Идёт загрузка исполнителей…</string>
+  <string name="genres_loading">Идёт загрузка жанров…</string>
+  <string name="tracks_loading">Идёт загрузка треков…</string>
+  <string name="go_back">Вернуться обратно</string>
+  <string name="loading">Идёт загрузка…</string>
+</resources>

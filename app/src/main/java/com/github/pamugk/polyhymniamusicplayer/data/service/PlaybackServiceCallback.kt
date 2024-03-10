@@ -44,8 +44,32 @@ internal class PlaybackServiceCallback(
         session: MediaLibraryService.MediaLibrarySession,
         browser: MediaSession.ControllerInfo,
         mediaId: String
-    ): ListenableFuture<LibraryResult<MediaItem>> {
-        return super.onGetItem(session, browser, mediaId)
+    ): ListenableFuture<LibraryResult<MediaItem>> = when {
+        mediaId.startsWith("albums/") -> coroutineScope.future {
+            val album = datasource.getAlbum(mediaId.substringAfter("albums/"))
+            if (album == null)
+                LibraryResult.ofError(LibraryResult.RESULT_ERROR_UNKNOWN)
+            else LibraryResult.ofItem(album, null)
+        }
+        mediaId.startsWith("artists/") -> coroutineScope.future {
+            val artist = datasource.getArtist(mediaId.substringAfter("artists/"))
+            if (artist == null)
+                LibraryResult.ofError(LibraryResult.RESULT_ERROR_UNKNOWN)
+            else LibraryResult.ofItem(artist, null)
+        }
+        mediaId.startsWith("genres/") -> coroutineScope.future {
+            val genre = datasource.getGenre(mediaId.substringAfter("genres/"))
+            if (genre == null)
+                LibraryResult.ofError(LibraryResult.RESULT_ERROR_UNKNOWN)
+            else LibraryResult.ofItem(genre, null)
+        }
+        mediaId.startsWith("tracks/") -> coroutineScope.future {
+            val track = datasource.getTrack(mediaId.substringAfter("tracks/"))
+            if (track == null)
+                LibraryResult.ofError(LibraryResult.RESULT_ERROR_UNKNOWN)
+            else LibraryResult.ofItem(track, null)
+        }
+        else -> Futures.immediateFuture(LibraryResult.ofError(LibraryResult.RESULT_ERROR_UNKNOWN))
     }
 
     override fun onGetChildren(
