@@ -13,6 +13,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,7 +38,18 @@ fun AlbumScreen(
     onGoBack: () -> Unit = {},
     padding: PaddingValues = PaddingValues()
 ) {
-    val result: Result<List<MediaItem>> by produceState(initialValue = Result(state = Result.State.LOADING)) {
+    val albumResult: Result<MediaItem> by produceState(initialValue = Result(state = Result.State.LOADING)) {
+        value = try {
+            val response = mediaBrowser.getItem("albums/$id").await()
+            Result(data = response.value, state = Result.State.SUCCESS)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result(state = Result.State.ERROR)
+        }
+    }
+
+    val albumTracksResult: Result<List<MediaItem>> by produceState(initialValue = Result(state = Result.State.LOADING)) {
         value = try {
             val response = mediaBrowser.getChildren("albums/$id", 0, 100, null).await()
             Result(data = response.value, state = Result.State.SUCCESS)
@@ -49,9 +61,18 @@ fun AlbumScreen(
     }
 
     Scaffold(
+        modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
         topBar = {
             TopAppBar(
-                title = {  },
+                title = {
+                    when (albumResult.state) {
+                        Result.State.ERROR -> Text(text = stringResource(R.string.error_occured))
+                        Result.State.LOADING -> Text(text = stringResource(R.string.loading))
+                        Result.State.SUCCESS -> Text(
+                            text = albumResult.data?.mediaMetadata?.albumTitle?.toString()
+                                ?: stringResource(R.string.no_album))
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onGoBack) {
                         Icon(
@@ -61,10 +82,9 @@ fun AlbumScreen(
                     }
                 }
             )
-        },
-        modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
+        }
     ) { innerPadding ->
-        when (result.state) {
+        when (albumTracksResult.state) {
             Result.State.ERROR -> StatusPage(
                 description = stringResource(R.string.error_occured),
                 icon = Icons.Default.Error,
@@ -75,7 +95,7 @@ fun AlbumScreen(
                 text = stringResource(R.string.tracks_loading)
             )
             Result.State.SUCCESS -> {
-                val tracks = result.data
+                val tracks = albumTracksResult.data
                 if (tracks.isNullOrEmpty()) {
                     StatusPage(
                         description = stringResource(R.string.nothing_found),

@@ -13,6 +13,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,7 +38,18 @@ fun GenreScreen(
     onGoBack: () -> Unit = {},
     padding: PaddingValues = PaddingValues()
 ) {
-    val result: Result<List<MediaItem>> by produceState(initialValue = Result(state = Result.State.LOADING)) {
+    val genreResult: Result<MediaItem> by produceState(initialValue = Result(state = Result.State.LOADING)) {
+        value = try {
+            val response = mediaBrowser.getItem("genres/$id").await()
+            Result(data = response.value, state = Result.State.SUCCESS)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result(state = Result.State.ERROR)
+        }
+    }
+    
+    val genreTracksResult: Result<List<MediaItem>> by produceState(initialValue = Result(state = Result.State.LOADING)) {
         value = try {
             val response = mediaBrowser.getChildren("genres/$id", 0, 100, null).await()
             Result(data = response.value, state = Result.State.SUCCESS)
@@ -49,9 +61,20 @@ fun GenreScreen(
     }
 
     Scaffold(
+        modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
         topBar = {
             TopAppBar(
-                title = {  },
+                title = {
+                    Text(
+                        text = when (genreResult.state) {
+                            Result.State.ERROR -> stringResource(R.string.error_occured)
+                            Result.State.LOADING -> stringResource(R.string.loading)
+                            Result.State.SUCCESS ->
+                                genreResult.data?.mediaMetadata?.genre
+                                    ?: stringResource(R.string.no_genre)
+                        }.toString()
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onGoBack) {
                         Icon(
@@ -61,10 +84,9 @@ fun GenreScreen(
                     }
                 }
             )
-        },
-        modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
+        }
     ) { innerPadding ->
-        when (result.state) {
+        when (genreTracksResult.state) {
             Result.State.ERROR -> StatusPage(
                 description = stringResource(R.string.error_occured),
                 icon = Icons.Default.Error,
@@ -75,7 +97,7 @@ fun GenreScreen(
                 text = stringResource(R.string.tracks_loading)
             )
             Result.State.SUCCESS -> {
-                val tracks = result.data
+                val tracks = genreTracksResult.data
                 if (tracks.isNullOrEmpty()) {
                     StatusPage(
                         description = stringResource(R.string.nothing_found),

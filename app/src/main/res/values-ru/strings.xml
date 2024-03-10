@@ -31,4 +31,5 @@
   <string name="genres_loading">Идёт загрузка жанров…</string>
   <string name="tracks_loading">Идёт загрузка треков…</string>
   <string name="go_back">Вернуться обратно</string>
+  <string name="loading">Идёт загрузка…</string>
 </resources>
